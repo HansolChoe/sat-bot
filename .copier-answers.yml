@@ -1,0 +1,13 @@
+_commit: v1.5.1
+_src_path: gh:superlinear-ai/substrate
+author_email: hansol614@gmail.com
+author_name: Hansol Choe
+project_description: A Slack bot for SAT
+project_name: SAT Slack Bot
+project_type: app
+project_url: https://github.com/HansolChoe/sat-slack-bot.git
+python_version: '3.12'
+typing: strict
+with_conventional_commits: true
+with_fastapi_api: true
+with_typer_cli: true
