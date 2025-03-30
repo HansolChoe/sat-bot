@@ -80,3 +80,8 @@ The following development environments are supported:
 - Run `cz bump` to bump the app's version, update the `CHANGELOG.md`, and create a git tag. Then push the changes and the git tag with `git push origin main --tags`.
 
 </details>
+
+
+# References
+- https://tools.slack.dev/bolt-python/getting-started
+- https://tools.slack.dev/bolt-python/tutorial/ai-chatbot

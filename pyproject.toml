@@ -12,14 +12,18 @@ authors = [
 ]
 requires-python = ">=3.12,<4.0"
 dependencies = [
+  "aiohttp>=3.11.14",
   "fastapi[all] (>=0.115.6)",
   "gunicorn (>=23.0.0)",
+  "langchain>=0.3.21",
+  "langchain-community>=0.3.20",
+  "litellm>=1.65.0",
   "poethepoet (>=0.32.1)",
+  "python-dotenv>=1.1.0",
+  "slack-bolt>=1.23.0",
+  "slack-sdk>=3.35.0",
   "typer (>=0.15.1)",
 ]
-
-[project.scripts]  # https://docs.astral.sh/uv/concepts/projects/config/#command-line-interfaces
-sat-slack-bot = "sat_slack_bot.cli:app"
 
 [project.urls]  # https://packaging.python.org/en/latest/specifications/well-known-project-urls/#well-known-labels
 homepage = "https://github.com/HansolChoe/sat-slack-bot.git"
@@ -40,11 +44,16 @@ dev = [
   "pdoc (>=15.0.1)",
   "pre-commit (>=4.0.1)",
   "pytest (>=8.3.4)",
+  "pytest-asyncio>=0.26.0",
   "pytest-mock (>=3.14.0)",
   "pytest-xdist (>=3.6.1)",
   "ruff (>=0.9.2)",
   "typeguard (>=4.4.1)",
 ]
+
+[tool.uv.sources]
+sat-slack-bot = { workspace = true }
+
 
 [tool.commitizen]  # https://commitizen-tools.github.io/commitizen/config/
 bump_message = "bump: v$current_version → v$new_version"
@@ -91,6 +100,9 @@ addopts = "--color=yes --doctest-modules --exitfirst --failed-first --strict-con
 filterwarnings = ["error", "ignore::DeprecationWarning"]
 testpaths = ["src", "tests"]
 xfail_strict = true
+markers = [
+  "asyncio: mark test as asyncio to be run with pytest-asyncio",
+]
 
 [tool.ruff]  # https://docs.astral.sh/ruff/settings/
 fix = true
@@ -121,41 +133,15 @@ type = "simple"
 [tool.poe.tasks]
 
   [tool.poe.tasks.serve]
-  help = "Serve the REST API"
+  help = "Serve app"
   shell = """
     if [ $dev ]
     then {
-      uvicorn \
-        --host $host \
-        --port $port \
-        --reload \
-        sat_slack_bot.api:app
+      LOG_LEVEL=DEBUG uv run python -m sat_slack_bot.app
     } else {
-      gunicorn \
-        --access-logfile - \
-        --bind $host:$port \
-        --graceful-timeout 10 \
-        --keep-alive 10 \
-        --log-file - \
-        --timeout 30 \
-        --worker-class uvicorn.workers.UvicornWorker \
-        --worker-tmp-dir /dev/shm \
-        --workers 2 \
-        sat_slack_bot.api:app
+      uv run python -m sat_slack_bot.app
     } fi
     """
-
-    [[tool.poe.tasks.serve.args]]
-    help = "Bind socket to this host (default: 0.0.0.0)"
-    name = "host"
-    options = ["--host"]
-    default = "0.0.0.0"
-
-    [[tool.poe.tasks.serve.args]]
-    help = "Bind socket to this port (default: 8000)"
-    name = "port"
-    options = ["--port"]
-    default = "8000"
 
     [[tool.poe.tasks.serve.args]]
     help = "Enable development mode"

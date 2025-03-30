@@ -36,6 +36,9 @@
                 "coverage-gutters.coverageFileNames": [
                     "reports/coverage.xml"
                 ],
+                "coverage-gutters.coverageReportFileName": "reports/coverage.xml",
+                "coverage-gutters.showGutterCoverage": true,
+                "coverage-gutters.showLineCoverage": true,
                 "editor.codeActionsOnSave": {
                     "source.fixAll": "explicit",
                     "source.organizeImports": "explicit"
