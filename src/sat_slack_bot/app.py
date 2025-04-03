@@ -6,12 +6,13 @@ import os
 from typing import Any
 
 from dotenv import load_dotenv
+from langchain.chains import ConversationChain
 from slack_bolt.adapter.socket_mode.async_handler import AsyncSocketModeHandler
 from slack_bolt.async_app import AsyncApp, AsyncSay
 from slack_sdk.web.async_client import AsyncWebClient
 
+from sat_slack_bot.memory import slack_full_thread_to_memory
 from sat_slack_bot.provider import llm
-from sat_slack_bot.streaming_helper import respond_with_llm_stream_from_event
 
 load_dotenv()
 logging.basicConfig(level=logging.INFO)
@@ -23,27 +24,36 @@ app = AsyncApp(token=SLACK_BOT_TOKEN)
 
 
 @app.event("app_mention")
-async def handle_app_mention(event: dict[str, Any], client: AsyncWebClient, say: AsyncSay) -> None:
+async def handle_app_mention(
+    event: dict[str, Any],
+    context: dict[str, Any],
+    client: AsyncWebClient,
+    say: AsyncSay,
+) -> None:
     """Handle app mention events."""
+    logger.debug("Received context: %s", context)
     logger.debug("Received event: %s", json.dumps(event, indent=2))
 
-    await client.reactions_add(
-        channel=event["channel"],
-        timestamp=event["ts"],
-        name="eyes",
-    )
+    thread_ts = event.get("thread_ts") or event["ts"]
 
     prompt = event.get("text", "")
-    if prompt:
-        thread_ts = event.get("thread_ts") or event["ts"]
-        await respond_with_llm_stream_from_event(
-            event=event,
-            prompt=prompt,
-            llm=llm,
-            say=say,
-            client=client,
-            thread_ts=thread_ts,
-        )
+    if not prompt:
+        return
+
+    bot_user_id = context["bot_user_id"]
+
+    memory = await slack_full_thread_to_memory(
+        client=client,
+        channel=event["channel"],
+        thread_ts=thread_ts,
+        bot_user_id=bot_user_id,
+        llm=llm,
+    )
+
+    chain = ConversationChain(llm=llm, memory=memory)
+
+    response = await chain.arun(prompt)
+    await say(text=response, thread_ts=thread_ts)
 
 
 @app.event("message")

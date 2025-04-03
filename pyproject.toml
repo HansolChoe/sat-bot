@@ -17,11 +17,15 @@ dependencies = [
   "gunicorn (>=23.0.0)",
   "langchain>=0.3.21",
   "langchain-community>=0.3.20",
+  "langchain-mcp-adapters>=0.0.3",
   "litellm>=1.65.0",
+  "mcp-atlassian>=0.4.0",
+  "mcp[cli]>=1.6.0",
   "poethepoet (>=0.32.1)",
   "python-dotenv>=1.1.0",
   "slack-bolt>=1.23.0",
   "slack-sdk>=3.35.0",
+  "transformers>=4.50.3",
   "typer (>=0.15.1)",
 ]
 
